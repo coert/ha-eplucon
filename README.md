@@ -6,6 +6,7 @@ This custom integration allows you to integrate your Eplucon devices into Home A
 
 - Monitor indoor temperature, vent RPM, brine circulation pump, and more in real-time.
 - Automatically update sensor data using Home Assistant's update coordinator.
+- Monitor all th-TOUCH zones controllers connected to an Eplucon unit (creates N more devices, with N being the number of connected controllers)
 
 ## Installation
 
@@ -18,9 +19,9 @@ This custom integration allows you to integrate your Eplucon devices into Home A
 
 ### Manual Installation
 
-1. Download the latest release from the [GitHub releases page](https://github.com/koenhendriks/ha-eplucon/releases).
+1. Download the latest release from the [GitHub releases page](https://github.com/coert/ha-eplucon/releases).
 2. Extract the `eplucon` folder into your `config/custom_components/` directory.
-3. Restart Home Assistant.
+3. Restart Home Assistant: `$ ha core restart && ha core logs -f --log-level debug`
 
 ## Configuration
 
@@ -51,6 +52,13 @@ This integration provides all available sensors that can be retrieved from the [
 - **Brine Circulation Pump** (RPM)
 - **Outdoor Temperature** (°C) - if available
 - **Heating Status** - if applicable
+
+For each connected th-TOUCH zones controller, the following is available
+
+- **Set temperature** (°C)
+- **Current temperature** (°C)
+- **Battery level** (%)
+- **Signal strength** (dBm)
 
 These sensors are automatically created based on the real-time information available from your Eplucon device.
 
