@@ -1,18 +1,21 @@
-from datetime import timedelta
 import logging
-import async_timeout
-from homeassistant.config_entries import ConfigEntry
+from datetime import timedelta
 from typing import Callable
 
+import async_timeout
 from device import EpluconDevice
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.core import callback, HomeAssistant
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
-    UpdateFailed, _DataT,
+    UpdateFailed,
+    _DataT,
 )
+
+from eplucon.eplucon_api.eplucon_client import ApiAuthError, ApiError
 
 from .const import DOMAIN
 
@@ -20,9 +23,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-        hass: HomeAssistant,
-        entry: ConfigEntry,
-        async_add_entities: Callable
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: Callable
 ) -> None:
     # assuming API object stored here by __init__.py
     eplucon_api = hass.data[DOMAIN][entry.entry_id]
@@ -45,7 +46,7 @@ class EpluconCoordinator(DataUpdateCoordinator):
             _LOGGER,
             name="Eplucon Coordinator",
             update_interval=timedelta(seconds=30),
-            always_update=True
+            always_update=True,
         )
         self.eplucon_api = eplucon_api
         self._devices: EpluconDevice | None = None

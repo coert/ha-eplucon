@@ -186,3 +186,6 @@ fabric.properties
 
 ha_config
 custom_components/eplucon/test.py
+custom_components/main.py
+custom_components/eplucon/eplucon_web/DTO/*json
+eplucon.tar.bz2

@@ -1,20 +1,26 @@
 import logging
-import voluptuous as vol
+import inspect
 from typing import Any, Dict, Optional
+
+import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import callback
 from homeassistant.helpers import aiohttp_client
-from homeassistant.data_entry_flow import FlowResult
+
+# from homeassistant.data_entry_flow import FlowResult
 from .const import DOMAIN, SUPPORTED_TYPES
-from .eplucon_api.eplucon_client import EpluconApi, ApiAuthError, ApiError, BASE_URL
+from .eplucon_api.eplucon_client import BASE_URL, ApiAuthError, ApiError, EpluconApi
 
 _LOGGER = logging.getLogger(__name__)
 
 # Define the schema for the user input (API token)
-DATA_SCHEMA = vol.Schema({
-    vol.Required("api_token"): str,
-    vol.Required("api_endpoint", default=BASE_URL): str
-})
+DATA_SCHEMA = vol.Schema(
+    {
+        vol.Required("api_token"): str,
+        vol.Required("api_endpoint", default=BASE_URL): str,
+    }
+)
 
 
 class EpluconConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -22,7 +28,9 @@ class EpluconConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    async def async_step_user(self, user_input: Optional[Dict[str, Any]] = None) -> FlowResult:
+    async def async_step_user(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
         errors: Dict[str, str] = {}
 
@@ -31,8 +39,12 @@ class EpluconConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             # Attempt to connect to the API using the provided API token & endpoint
             api_token: str = user_input["api_token"]
-            api_endpoint: str = user_input['api_endpoint']
-            client = EpluconApi(api_token, api_endpoint, aiohttp_client.async_get_clientsession(self.hass))
+            api_endpoint: str = user_input["api_endpoint"]
+            client = EpluconApi(
+                api_token,
+                api_endpoint,
+                aiohttp_client.async_get_clientsession(self.hass),
+            )
 
             try:
                 devices = await client.get_devices()
@@ -42,11 +54,19 @@ class EpluconConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 for device in devices:
                     if device.type not in SUPPORTED_TYPES:
                         _LOGGER.warning(
-                            f"Device {device.name} with type {device.type} is not supported yet. Skipping...")
+                            f"Device {device.name} with type {device.type} is not supported yet. Skipping..."
+                        )
                         devices.remove(device)
 
                 if len(devices) > 0:
-                    return self.async_create_entry(title="Eplucon", data={"devices": devices, "api_token": api_token, "api_endpoint": api_endpoint})
+                    return self.async_create_entry(
+                        title="Eplucon",
+                        data={
+                            "devices": devices,
+                            "api_token": api_token,
+                            "api_endpoint": api_endpoint,
+                        },
+                    )
 
                 errors["base"] = "no-devices"
 
@@ -74,7 +94,9 @@ class EpluconConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> config_entries.OptionsFlow:
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
         """Get the options flow for this handler."""
         return EpluconOptionsFlowHandler(config_entry)
 
@@ -86,38 +108,41 @@ class EpluconOptionsFlowHandler(config_entries.OptionsFlow):
         """Initialize Eplucon options flow."""
         self.config_entry = config_entry
 
-    async def async_step_init(self, user_input: Optional[Dict[str, Any]] = None) -> FlowResult:
+    async def async_step_init(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ) -> ConfigFlowResult:
+        _LOGGER.debug(f"{inspect.currentframe().f_code.co_name}")  # type: ignore
         """Manage the options for the integration."""
         errors: Dict[str, str] = {}
 
         if user_input is not None:
             # If the user has provided new data, update the config entry
-            api_token = user_input.get("api_token")
+            api_token = str(user_input.get("api_token"))
             api_endpoint = user_input.get("api_endpoint")
 
             # Revalidate the API token to ensure it's correct
-            client = EpluconApi(api_token, api_endpoint, aiohttp_client.async_get_clientsession(self.hass))
+            client = EpluconApi(
+                api_token,
+                api_endpoint,
+                aiohttp_client.async_get_clientsession(self.hass),
+            )
 
             try:
                 devices = await client.get_devices()
-
-                _LOGGER.info(f"Devices found: {devices}")
 
                 # Skip unsupported devices
                 for device in devices:
                     if device.type not in SUPPORTED_TYPES:
                         _LOGGER.debug(
-                            f"Device {device.name} with type {device.type} is not supported yet. Skipping...")
+                            f"Device {device.name} with type {device.type} is not supported yet. Skipping..."
+                        )
                         devices.remove(device)
 
                 if len(devices) > 0:
                     # Update the configuration entry with the new API token and devices
                     self.hass.config_entries.async_update_entry(
                         self.config_entry,
-                        data={
-                            "api_token": api_token,
-                            "devices": devices
-                        }
+                        data={"api_token": api_token, "devices": devices},
                     )
                     return self.async_create_entry(title="", data={})
 
@@ -141,10 +166,16 @@ class EpluconOptionsFlowHandler(config_entries.OptionsFlow):
         # Show the options form with the current API token as the default value
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema({
-                vol.Required("api_token", default=self.config_entry.data.get("api_token")): str,
-                vol.Required("api_endpoint", default=self.config_entry.data.get("api_endpoint", BASE_URL)): str
-            }),
-            errors=errors
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        "api_token", default=self.config_entry.data.get("api_token")
+                    ): str,
+                    vol.Required(
+                        "api_endpoint",
+                        default=self.config_entry.data.get("api_endpoint", BASE_URL),
+                    ): str,
+                }
+            ),
+            errors=errors,
         )
-

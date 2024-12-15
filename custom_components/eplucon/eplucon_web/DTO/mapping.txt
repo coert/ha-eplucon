@@ -1,0 +1,113 @@
+https://portaal.eplucon.nl/e-control/heatpump/service
+
+Verwarmen
+=========
+Verwarming ingeschakeld (str)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5813
+
+Stop verwarmen (float)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5814
+
+Bijstook elektr.el. (bool)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5815
+
+Elektr.el. noodbedrijf (bool)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5816
+
+Correction heatcurve DG1 (float)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5886
+
+Correction heatcurve SG2 (float)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5902
+
+Correction heatcurve SG3 (float)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5903
+
+Correction heatcurve SG4 (float)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5904
+
+Koeling
+=======
+Koeling ingeschakeld (str)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5817
+
+Stop actief koeling onder (float)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5818
+
+Stop passief koeling onder (float)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5901
+
+Auto Wp
+=======
+Winter start temp.
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5819
+
+Zomer start temp.
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5820
+
+Tijd voor omschakelen
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5821
+
+WW
+==
+WW ingeschakeld
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5711
+
+Actuele temperatuur warmwater
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5713
+
+Ingestelde temp. WW
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5700
+
+DT setpoint
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5804
+
+Elektr.el. noodbedrijf
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5806
+
+Elektr.el. ondersteuning
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5805
+
+Zwembad
+=======
+Zwembad (bool)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5905
+
+Zwembad temperatuur (float)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5906
+
+Winter programma tijd (int) (minuten)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5907
+
+Warmtepomp
+==========
+Warmtepomp ingeschakeld (str)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5715
+
+Energie besparende modus
+========================
+Energiedrempel (float)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5758
+
+Energie meettijd (int) (seconden)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5759
+
+Looptijd de modus (int) (uren)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5879
+
+Ingestelde temp. warm water (int)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5760
+
+Ruimte temp. calibratie (float)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5761
+
+Vermogens begrenzing
+====================
+Vermogens begrenzing (float)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5775
+
+Hysterese activering pomp (float)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5776
+
+Tijd tot activering pomp (int) (seconden)
+https://portaal.eplucon.nl/e-control/ajax/tile/info/5777
