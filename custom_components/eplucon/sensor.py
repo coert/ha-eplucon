@@ -1,37 +1,37 @@
 from __future__ import annotations
 
 import inspect
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
-import logging
-from dacite import from_dict
+from typing import Any
 
+from dacite import from_dict
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.sensor import (
+    SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
-    SensorDeviceClass,
     SensorStateClass,
 )
-from homeassistant.components.binary_sensor import BinarySensorDeviceClass
-from homeassistant.const import (
-    UnitOfTemperature,
-    REVOLUTIONS_PER_MINUTE,
-    UnitOfPressure,
-    UnitOfEnergy,
-    UnitOfTime,
-    UnitOfPower,
-    PERCENTAGE,
-    SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
-)
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import (
+    PERCENTAGE,
+    REVOLUTIONS_PER_MINUTE,
+    SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+    UnitOfEnergy,
+    UnitOfPower,
+    UnitOfPressure,
+    UnitOfTemperature,
+    UnitOfTime,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.typing import StateType
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
-from homeassistant.helpers.typing import StateType
-from typing import Any
 
 from .const import DOMAIN, MANUFACTURER
 from .eplucon_api.DTO.DeviceDTO import DeviceDTO
