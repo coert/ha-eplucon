@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "ha-eplucon"
-version = "0.1.0"
+version = "2.0.1"
 description = ""
 authors = ["coert <coert@alpha.one>"]
 readme = "README.md"
-packages = [{include = "ha_eplucon"}]
+packages = [{ include = "ha_eplucon" }]
 
 [tool.poetry.dependencies]
 python = ">=3.12"
