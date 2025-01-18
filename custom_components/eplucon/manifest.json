@@ -1,13 +1,26 @@
 {
   "domain": "eplucon",
   "name": "Eplucon",
-  "codeowners": ["@koenhendriks"],
-  "config_flow": true,
-  "dependencies": ["sensor"],
-  "documentation": "https://github.com/koenhendriks/ha-eplucon",
+  "version": "2.0.0",
+  "documentation": "https://github.com/coert/ha-eplucon",
+  "dependencies": [
+    "sensor"
+  ],
+  "codeowners": [
+    "@koenhendriks", 
+    "@coert"
+  ],
+  "integration_type": "device",
+  "zeroconf": [
+    "_https._tcp.local."
+  ],
+  "requirements": [
+    "aiohttp", 
+    "dacite", 
+    "orjson"
+  ],
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/koenhendriks/ha-eplucon/issues",
-  "requirements": ["aiohttp", "dacite"],
-  "single_config_entry": true,
-  "version": "1.3.0"
+  "issue_tracker": "https://github.com/coert/ha-eplucon/issues",
+  "config_flow": true,
+  "single_config_entry": true
 }
