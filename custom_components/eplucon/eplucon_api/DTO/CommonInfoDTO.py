@@ -37,7 +37,7 @@ class CommonInfoDTO:
     heating_mode: int
     dg1: str
     sg2: Optional[str]
-    sg3: str
+    sg3: Optional[str]
     sg4: Optional[str]
     warmwater: int
     brine_circulation_pump: Union[float, str]

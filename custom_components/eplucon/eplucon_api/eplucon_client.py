@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import logging
 import inspect
+import logging
 from typing import Any, Optional
 
 import aiohttp
@@ -60,7 +60,7 @@ class EpluconApi:
             data = devices.get("data", [])
             parent_devices = [DeviceDTO(**device) for device in data]
 
-        _LOGGER.debug(f"Received the following devices from API: {parent_devices}")
+        # _LOGGER.debug(f"Received the following devices from API: {parent_devices}")
 
         dto_devices: list[DeviceDTO] = []
         for device in parent_devices:
@@ -97,11 +97,16 @@ class EpluconApi:
             data = await response.json()
             self.validate_response(data)
 
-            common_info = CommonInfoDTO(**data["data"]["common"])
-            heatpump_info = data["data"]["heatpump"]  # Not sure what this could be
-            realtime_info = RealtimeInfoDTO(common=common_info, heatpump=heatpump_info)
+            try:
+                common_info = CommonInfoDTO(**data["data"]["common"])
+                heatpump_info = data["data"]["heatpump"]  # Not sure what this could be
+                realtime_info = RealtimeInfoDTO(common=common_info, heatpump=heatpump_info)
+                return realtime_info
 
-            return realtime_info
+            except Exception as e:
+                _LOGGER.error(f"Failed to parse realtime info: {e}")
+                raise
+
 
     async def get_zone_controllers(self, module_id: int) -> list[ZoneControllerInfoDTO]:
         _LOGGER.debug(f"{inspect.currentframe().f_code.co_name}")  # type: ignore
@@ -109,7 +114,7 @@ class EpluconApi:
         zone_controllers_info = []
         async with self._session.get(url, headers=self._headers) as response:
             data = await response.json()
-            _LOGGER.debug(f"Received zone controllers from API ({url}): {data}")
+            # _LOGGER.debug(f"Received zone controllers from API ({url}): {data}")
             self.validate_response(data)
 
             for controller in data["data"]:
@@ -125,7 +130,7 @@ class EpluconApi:
 
     @staticmethod
     def validate_response(response: Any) -> None:
-        _LOGGER.debug(f"Validating API response for {response}")
+        # _LOGGER.debug(f"Validating API response for {response}")
         if "auth" not in response:
             raise ApiError("Error from Eplucon API, expecting auth key in response.")
 
