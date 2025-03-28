@@ -1,15 +1,7 @@
-[tool.poetry]
-name = "ha-eplucon"
-version = "2.0.1"
-description = ""
-authors = ["coert <coert@alpha.one>"]
+[project]
+name = "my-ha-eplucon"
+version = "0.1.0"
+description = "Add your description here"
 readme = "README.md"
-packages = [{ include = "ha_eplucon" }]
-
-[tool.poetry.dependencies]
-python = ">=3.12"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires-python = ">=3.13"
+dependencies = ["dacite>=1.9.2", "homeassistant>=2025.2.5", "orjson>=3.10"]
