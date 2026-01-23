@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.5.0](https://github.com/koenhendriks/ha-eplucon/releases/1.5.0) - 2026-01-23
+
+### Fixed
+* ([#14](https://github.com/koenhendriks/ha-eplucon/issues/14)) Config flow has been updated as of home assistant >2025.12 by [@reddevil82](https://github.com/reddevil82)
+* ([#17](https://github.com/koenhendriks/ha-eplucon/issues/17)) Updated the Eplucon API client to handle device fetching and response validation more robustly by [@reddevil82](https://github.com/reddevil82)
+
+
+### Updated
+* Refactored sensor entity descriptions for clearer implementation and reduced duplication by [@reddevil82](https://github.com/reddevil82)
+* Streamlined the coordinator's device update mechanism to ensure more accurate state representation in Home Assistant by [@reddevil82](https://github.com/reddevil82)
+
+### Added
+* Enhanced error handling and debugging outputs in API data fetching methods by [@reddevil82](https://github.com/reddevil82)
+
+
 ## [1.4.1](https://github.com/koenhendriks/ha-eplucon/releases/1.4.1) - 2025-03-23
 
 ### Fixed
