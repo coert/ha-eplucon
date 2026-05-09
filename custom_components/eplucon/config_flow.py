@@ -110,18 +110,14 @@ class EpluconConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
+        _: config_entries.ConfigEntry,
     ) -> config_entries.OptionsFlow:
         """Get the options flow for this handler."""
-        return EpluconOptionsFlowHandler(config_entry)
+        return EpluconOptionsFlowHandler()
 
 
 class EpluconOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle Eplucon options."""
-
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Initialize Eplucon options flow."""
-        self.config_entry = config_entry
 
     def _build_options_schema(self) -> vol.Schema:
         """Build the options schema with current values."""
