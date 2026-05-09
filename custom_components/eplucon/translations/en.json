@@ -1,48 +1,56 @@
 {
-    "title": "Eplucon",
-    "config": {
-        "step": {
-            "user": {
-                "title": "Connect to Eplucon",
-                "description": "Please enter your API token to connect to Eplucon (https://portaal.eplucon.nl/account/api_tokens).",
-                "data_description": {
-                    "api_endpoint": "Override the default API endpoint (optional)"
-                },
-                "data": {
-                    "api_token": "API Token",
-                    "api_endpoint": "API Endpoint"
-                }
-            }
+  "title": "Eplucon",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Eplucon",
+        "description": "Please enter your API token to connect to Eplucon (https://portaal.eplucon.nl/account/api_tokens).",
+        "data_description": {
+          "api_endpoint": "Override the default API endpoint (optional)"
         },
-        "error": {
-            "auth": "Authentication failed. Please check your API token and/or API endpoint.",
-            "api": "Failed to connect to the Eplucon API. Please check the API endpoint and try again or check the logs for more info.",
-            "unknown": "An unexpected error occurred. Please try again or check the logs for more info.",
-            "no-devices": "No devices found. Ensure you're device is added to your Eplucon account"
-        },
-        "abort": {
-            "single_instance_allowed": "Only a single instance of Eplucon is allowed."
+        "data": {
+          "api_token": "API Token",
+          "api_endpoint": "API Endpoint"
         }
+      }
     },
-    "options": {
-        "step": {
-            "init": {
-                "title": "Eplucon Config options",
-                "description": "Current API token & endpoint",
-                "data_description": {
-                    "api_endpoint": "Override the default API endpoint (optional)"
-                },
-                "data": {
-                    "api_token": "API Token",
-                    "api_endpoint": "API Endpoint"
-                }
-            }
-        },
-        "error": {
-            "auth": "Authentication failed. Please check your API token and/or API endpoint.",
-            "api": "Failed to connect to the Eplucon API. Please check the API endpoint and try again or check the logs for more info.",
-            "unknown": "An unexpected error occurred. Please try again or check the logs for more info.",
-            "no-devices": "No devices found. Ensure you're device is added to your Eplucon account"
-        }
+    "error": {
+      "auth": "Authentication failed. Please check your API token and/or API endpoint.",
+      "api": "Failed to connect to the Eplucon API. Please check the API endpoint and try again or check the logs for more info.",
+      "unknown": "An unexpected error occurred. Please try again or check the logs for more info.",
+      "no-devices": "No devices found. Ensure you're device is added to your Eplucon account"
+    },
+    "abort": {
+      "single_instance_allowed": "Only a single instance of Eplucon is allowed."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Eplucon Config options",
+        "description": "Current API settings and optional brine statistics",
+        "data_description": {
+          "api_endpoint": "Override the default API endpoint (optional)",
+          "enable_brine_validity_stats": "Create derived brine validity entities and a monthly mean temperature sensor",
+          "brine_pump_threshold": "Minimum brine circulation pump percentage before the warm-up timer starts",
+          "brine_valid_minutes": "How long the pump must stay above the threshold before the brine input temperature is considered valid",
+          "brine_sample_interval_minutes": "How often a valid brine input temperature sample is added to the monthly mean"
+        },
+        "data": {
+          "api_token": "API Token",
+          "api_endpoint": "API Endpoint",
+          "enable_brine_validity_stats": "Enable brine validity statistics",
+          "brine_pump_threshold": "Brine pump threshold",
+          "brine_valid_minutes": "Valid after minutes",
+          "brine_sample_interval_minutes": "Sample interval minutes"
+        }
+      }
+    },
+    "error": {
+      "auth": "Authentication failed. Please check your API token and/or API endpoint.",
+      "api": "Failed to connect to the Eplucon API. Please check the API endpoint and try again or check the logs for more info.",
+      "unknown": "An unexpected error occurred. Please try again or check the logs for more info.",
+      "no-devices": "No devices found. Ensure you're device is added to your Eplucon account"
+    }
+  }
 }

@@ -1,0 +1,100 @@
+# config/packages/eplucon_brine_valid_mean.yaml
+
+template:
+  - binary_sensor:
+      - name: brine_circ_valid_15m
+        unique_id: brine_circ_valid_15m
+        state: >
+          {{ (states('sensor.brine_circulation_pump') | float(0)) > 5 }}
+        delay_on:
+          minutes: 15
+        delay_off:
+          seconds: 0
+
+  - sensor:
+      - name: brine_in_temp_valid
+        unique_id: brine_in_temp_valid
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {% if is_state('binary_sensor.brine_circ_valid_15m', 'on') %}
+            {{ states('sensor.brine_in_temperature') | float }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+      - name: brine_in_temp_mean_month
+        unique_id: brine_in_temp_mean_month
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state: >
+          {% set c = states('input_number.brine_temp_count') | float(0) %}
+          {% if c > 0 %}
+            {{ (states('input_number.brine_temp_sum') | float(0)) / c }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+        state_class: measurement
+
+input_number:
+  brine_temp_sum:
+    name: brine_temp_sum
+    min: -1000000
+    max: 1000000
+    step: 0.001
+    mode: box
+    unit_of_measurement: "°C"
+
+  brine_temp_count:
+    name: brine_temp_count
+    min: 0
+    max: 100000000
+    step: 1
+    mode: box
+
+automation:
+  - id: brine_temp_accumulate_when_valid
+    alias: brine_temp_accumulate_when_valid
+    mode: single
+    trigger:
+      - platform: time_pattern
+        minutes: "/5"
+    condition:
+      - condition: state
+        entity_id: binary_sensor.brine_circ_valid_15m
+        state: "on"
+    action:
+      - variables:
+          t: "{{ states('sensor.brine_in_temperature') | float(0) }}"
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.brine_temp_sum
+        data:
+          value: "{{ (states('input_number.brine_temp_sum') | float(0)) + t }}"
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.brine_temp_count
+        data:
+          value: "{{ (states('input_number.brine_temp_count') | float(0)) + 1 }}"
+
+  - id: brine_temp_reset_monthly
+    alias: brine_temp_reset_monthly
+    mode: single
+    trigger:
+      - platform: time
+        at: "00:00:10"
+    condition:
+      - condition: template
+        value_template: "{{ now().day == 1 }}"
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.brine_temp_sum
+        data:
+          value: 0
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.brine_temp_count
+        data:
+          value: 0

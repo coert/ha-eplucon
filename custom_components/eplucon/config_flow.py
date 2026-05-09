@@ -9,7 +9,18 @@ from homeassistant.core import callback
 from homeassistant.helpers import aiohttp_client
 
 # from homeassistant.data_entry_flow import FlowResult
-from .const import DOMAIN, SUPPORTED_TYPES
+from .const import (
+    CONF_BRINE_PUMP_THRESHOLD,
+    CONF_BRINE_SAMPLE_INTERVAL_MINUTES,
+    CONF_BRINE_VALID_MINUTES,
+    CONF_ENABLE_BRINE_VALIDITY_STATS,
+    DEFAULT_BRINE_PUMP_THRESHOLD,
+    DEFAULT_BRINE_SAMPLE_INTERVAL_MINUTES,
+    DEFAULT_BRINE_VALID_MINUTES,
+    DEFAULT_ENABLE_BRINE_VALIDITY_STATS,
+    DOMAIN,
+    SUPPORTED_TYPES,
+)
 from .eplucon_api.eplucon_client import BASE_URL, ApiAuthError, ApiError, EpluconApi
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,12 +62,16 @@ class EpluconConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 _LOGGER.debug(f"Received the following devices from API: {devices}")
 
-                for device in devices:
-                    if device.type not in SUPPORTED_TYPES:
-                        _LOGGER.warning(
-                            f"Device {device.name} with type {device.type} is not supported yet. Skipping..."
-                        )
-                        devices.remove(device)
+                unsupported_devices = [
+                    device for device in devices if device.type not in SUPPORTED_TYPES
+                ]
+                for device in unsupported_devices:
+                    _LOGGER.warning(
+                        f"Device {device.name} with type {device.type} is not supported yet. Skipping..."
+                    )
+                devices = [
+                    device for device in devices if device.type in SUPPORTED_TYPES
+                ]
 
                 if len(devices) > 0:
                     return self.async_create_entry(
@@ -108,10 +123,53 @@ class EpluconOptionsFlowHandler(config_entries.OptionsFlow):
         """Initialize Eplucon options flow."""
         self.config_entry = config_entry
 
+    def _build_options_schema(self) -> vol.Schema:
+        """Build the options schema with current values."""
+        return vol.Schema(
+            {
+                vol.Required(
+                    "api_token",
+                    default=self.config_entry.data.get("api_token"),
+                ): str,
+                vol.Required(
+                    "api_endpoint",
+                    default=self.config_entry.data.get("api_endpoint", BASE_URL),
+                ): str,
+                vol.Required(
+                    CONF_ENABLE_BRINE_VALIDITY_STATS,
+                    default=self.config_entry.options.get(
+                        CONF_ENABLE_BRINE_VALIDITY_STATS,
+                        DEFAULT_ENABLE_BRINE_VALIDITY_STATS,
+                    ),
+                ): bool,
+                vol.Required(
+                    CONF_BRINE_PUMP_THRESHOLD,
+                    default=self.config_entry.options.get(
+                        CONF_BRINE_PUMP_THRESHOLD,
+                        DEFAULT_BRINE_PUMP_THRESHOLD,
+                    ),
+                ): vol.All(vol.Coerce(float), vol.Range(min=0, max=100)),
+                vol.Required(
+                    CONF_BRINE_VALID_MINUTES,
+                    default=self.config_entry.options.get(
+                        CONF_BRINE_VALID_MINUTES,
+                        DEFAULT_BRINE_VALID_MINUTES,
+                    ),
+                ): vol.All(vol.Coerce(int), vol.Range(min=1, max=1440)),
+                vol.Required(
+                    CONF_BRINE_SAMPLE_INTERVAL_MINUTES,
+                    default=self.config_entry.options.get(
+                        CONF_BRINE_SAMPLE_INTERVAL_MINUTES,
+                        DEFAULT_BRINE_SAMPLE_INTERVAL_MINUTES,
+                    ),
+                ): vol.All(vol.Coerce(int), vol.Range(min=1, max=1440)),
+            }
+        )
+
     async def async_step_init(
         self, user_input: Optional[Dict[str, Any]] = None
     ) -> ConfigFlowResult:
-        _LOGGER.debug(f"{inspect.currentframe().f_code.co_name}")  # type: ignore
+        _LOGGER.debug("%s", inspect.currentframe().f_code.co_name)  # type: ignore[union-attr]
         """Manage the options for the integration."""
         errors: Dict[str, str] = {}
 
@@ -131,20 +189,44 @@ class EpluconOptionsFlowHandler(config_entries.OptionsFlow):
                 devices = await client.get_devices()
 
                 # Skip unsupported devices
-                for device in devices:
-                    if device.type not in SUPPORTED_TYPES:
-                        _LOGGER.debug(
-                            f"Device {device.name} with type {device.type} is not supported yet. Skipping..."
-                        )
-                        devices.remove(device)
+                unsupported_devices = [
+                    device for device in devices if device.type not in SUPPORTED_TYPES
+                ]
+                for device in unsupported_devices:
+                    _LOGGER.debug(
+                        f"Device {device.name} with type {device.type} is not supported yet. Skipping..."
+                    )
+                devices = [
+                    device for device in devices if device.type in SUPPORTED_TYPES
+                ]
 
                 if len(devices) > 0:
                     # Update the configuration entry with the new API token and devices
                     self.hass.config_entries.async_update_entry(
                         self.config_entry,
-                        data={"api_token": api_token, "devices": devices},
+                        data={
+                            "api_token": api_token,
+                            "api_endpoint": api_endpoint,
+                            "devices": devices,
+                        },
                     )
-                    return self.async_create_entry(title="", data={})
+                    return self.async_create_entry(
+                        title="",
+                        data={
+                            CONF_ENABLE_BRINE_VALIDITY_STATS: user_input[
+                                CONF_ENABLE_BRINE_VALIDITY_STATS
+                            ],
+                            CONF_BRINE_PUMP_THRESHOLD: user_input[
+                                CONF_BRINE_PUMP_THRESHOLD
+                            ],
+                            CONF_BRINE_VALID_MINUTES: user_input[
+                                CONF_BRINE_VALID_MINUTES
+                            ],
+                            CONF_BRINE_SAMPLE_INTERVAL_MINUTES: user_input[
+                                CONF_BRINE_SAMPLE_INTERVAL_MINUTES
+                            ],
+                        },
+                    )
 
                 errors["base"] = "no-devices"
 
@@ -166,16 +248,6 @@ class EpluconOptionsFlowHandler(config_entries.OptionsFlow):
         # Show the options form with the current API token as the default value
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        "api_token", default=self.config_entry.data.get("api_token")
-                    ): str,
-                    vol.Required(
-                        "api_endpoint",
-                        default=self.config_entry.data.get("api_endpoint", BASE_URL),
-                    ): str,
-                }
-            ),
+            data_schema=self._build_options_schema(),
             errors=errors,
         )

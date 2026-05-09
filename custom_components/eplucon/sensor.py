@@ -58,9 +58,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.indoor_temperature,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.indoor_temperature is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.indoor_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="act_vent_rpm",
@@ -68,9 +70,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=REVOLUTIONS_PER_MINUTE,
         value_fn=lambda device: device.realtime_info.common.act_vent_rpm,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.act_vent_rpm is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.act_vent_rpm is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="brine_circulation_pump",
@@ -78,9 +82,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
         value_fn=lambda device: device.realtime_info.common.brine_circulation_pump,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.brine_circulation_pump is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.brine_circulation_pump is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="brine_in_temperature",
@@ -89,9 +95,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.brine_in_temperature,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.brine_in_temperature is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.brine_in_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="brine_out_temperature",
@@ -100,9 +108,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.brine_out_temperature,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.brine_out_temperature is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.brine_out_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="brine_pressure",
@@ -111,9 +121,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfPressure.BAR,
         device_class=SensorDeviceClass.PRESSURE,
         value_fn=lambda device: device.realtime_info.common.brine_pressure,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.brine_pressure is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.brine_pressure is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="compressor_speed",
@@ -121,9 +133,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=REVOLUTIONS_PER_MINUTE,
         value_fn=lambda device: device.realtime_info.common.compressor_speed,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.compressor_speed is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.compressor_speed is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="condensation_temperature",
@@ -132,9 +146,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.condensation_temperature,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.condensation_temperature is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.condensation_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="configured_indoor_temperature",
@@ -142,10 +158,14 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda device: device.realtime_info.common.configured_indoor_temperature,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.configured_indoor_temperature is not None,
+        value_fn=lambda device: (
+            device.realtime_info.common.configured_indoor_temperature
+        ),
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.configured_indoor_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="cv_pressure",
@@ -154,9 +174,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfPressure.BAR,
         device_class=SensorDeviceClass.PRESSURE,
         value_fn=lambda device: device.realtime_info.common.cv_pressure,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.cv_pressure is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.cv_pressure is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="energy_delivered",
@@ -165,9 +187,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         value_fn=lambda device: device.realtime_info.common.energy_delivered,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.energy_delivered is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.energy_delivered is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="energy_usage",
@@ -175,9 +199,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         value_fn=lambda device: device.realtime_info.common.energy_usage,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.energy_usage is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.energy_usage is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="evaporation_temperature",
@@ -186,9 +212,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.evaporation_temperature,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.evaporation_temperature is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.evaporation_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="export_energy",
@@ -197,9 +225,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         value_fn=lambda device: device.realtime_info.common.export_energy,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.export_energy is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.export_energy is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="heating_in_temperature",
@@ -208,9 +238,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.heating_in_temperature,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.heating_in_temperature is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.heating_in_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="heating_out_temperature",
@@ -219,9 +251,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.heating_out_temperature,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.heating_out_temperature is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.heating_out_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="import_energy",
@@ -230,9 +264,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         value_fn=lambda device: device.realtime_info.common.import_energy,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.import_energy is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.import_energy is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="inverter_temperature",
@@ -241,9 +277,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.inverter_temperature,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.inverter_temperature is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.inverter_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="operating_hours",
@@ -252,9 +290,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTime.HOURS,
         device_class=SensorDeviceClass.DURATION,
         value_fn=lambda device: device.realtime_info.common.operating_hours,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.operating_hours is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.operating_hours is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="outdoor_temperature",
@@ -263,9 +303,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.outdoor_temperature,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.outdoor_temperature is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.outdoor_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="overheating",
@@ -274,9 +316,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.overheating,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.overheating is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.overheating is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="press_gas_pressure",
@@ -285,9 +329,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfPressure.BAR,
         device_class=SensorDeviceClass.PRESSURE,
         value_fn=lambda device: device.realtime_info.common.press_gas_pressure,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.press_gas_pressure is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.press_gas_pressure is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="press_gas_temperature",
@@ -296,9 +342,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.press_gas_temperature,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.press_gas_temperature is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.press_gas_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="production_circulation_pump",
@@ -306,9 +354,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
         value_fn=lambda device: device.realtime_info.common.production_circulation_pump,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.production_circulation_pump is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.production_circulation_pump is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="suction_gas_pressure",
@@ -317,9 +367,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfPressure.BAR,
         device_class=SensorDeviceClass.PRESSURE,
         value_fn=lambda device: device.realtime_info.common.suction_gas_pressure,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.suction_gas_pressure is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.suction_gas_pressure is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="suction_gas_temperature",
@@ -328,9 +380,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.suction_gas_temperature,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.suction_gas_temperature is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.suction_gas_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="total_active_power",
@@ -339,9 +393,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
         value_fn=lambda device: device.realtime_info.common.total_active_power,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.total_active_power is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.total_active_power is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="ww_temperature",
@@ -350,9 +406,11 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.ww_temperature,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.ww_temperature is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.ww_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="ww_temperature_configured",
@@ -361,69 +419,85 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.realtime_info.common.ww_temperature_configured,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.ww_temperature_configured is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.ww_temperature_configured is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="active_requests_ww",
         name="Active WW request",
         device_class=BinarySensorDeviceClass.HEAT,
-        value_fn=lambda device: "ON"
-        if device.realtime_info.common.active_requests_ww in ["ON", "1"]
-        else "OFF",
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.active_requests_ww is not None,
+        value_fn=lambda device: (
+            "ON"
+            if device.realtime_info.common.active_requests_ww in ["ON", "1"]
+            else "OFF"
+        ),
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.active_requests_ww is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="dg1",
         name="Direct Outlet (DG1)",
-        value_fn=lambda device: "ON"
-        if device.realtime_info.common.dg1 in ["ON", "1"]
-        else "OFF",
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.dg1 is not None,
+        value_fn=lambda device: (
+            "ON" if device.realtime_info.common.dg1 in ["ON", "1"] else "OFF"
+        ),
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.dg1 is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="sg2",
         name="Mixture Outlet (SG2)",
-        value_fn=lambda device: "ON"
-        if device.realtime_info.common.sg2 in ["ON", "1"]
-        else "OFF",
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.sg2 is not None,
+        value_fn=lambda device: (
+            "ON" if device.realtime_info.common.sg2 in ["ON", "1"] else "OFF"
+        ),
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.sg2 is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="sg3",
         name="Mixture Outlet (SG3)",
-        value_fn=lambda device: "ON"
-        if device.realtime_info.common.sg3 in ["ON", "1"]
-        else "OFF",
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.sg3 is not None,
+        value_fn=lambda device: (
+            "ON" if device.realtime_info.common.sg3 in ["ON", "1"] else "OFF"
+        ),
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.sg3 is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="sg4",
         name="Mixture Outlet (SG4)",
-        value_fn=lambda device: "ON"
-        if device.realtime_info.common.sg4 in ["ON", "1"]
-        else "OFF",
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.sg4 is not None,
+        value_fn=lambda device: (
+            "ON" if device.realtime_info.common.sg4 in ["ON", "1"] else "OFF"
+        ),
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.sg4 is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="spf",
         name="Seasonal Performance Factor (SPF)",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda device: device.realtime_info.common.spf,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.spf is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.spf is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="position_expansion_ventil",
@@ -431,88 +505,110 @@ SENSORS_HEATPUMP: tuple[EpluconSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
         value_fn=lambda device: device.realtime_info.common.position_expansion_ventil,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.position_expansion_ventil is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.position_expansion_ventil is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="number_of_starts",
         name="Number of Starts",
         state_class=SensorStateClass.TOTAL_INCREASING,
         value_fn=lambda device: device.realtime_info.common.number_of_starts,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.number_of_starts is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.number_of_starts is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="heating_mode",
         name="Heating Mode",
         device_class=BinarySensorDeviceClass.HEAT,
-        value_fn=lambda device: "ON"
-        if device.realtime_info.common.heating_mode in ["ON", "1"]
-        else "OFF",
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.heating_mode is not None,
+        value_fn=lambda device: (
+            "ON" if device.realtime_info.common.heating_mode in ["ON", "1"] else "OFF"
+        ),
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.heating_mode is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="warmwater",
         name="Warm Water",
         device_class=BinarySensorDeviceClass.HEAT,
-        value_fn=lambda device: "ON"
-        if device.realtime_info.common.warmwater in ["ON", "1"]
-        else "OFF",
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.warmwater is not None,
+        value_fn=lambda device: (
+            "ON" if device.realtime_info.common.warmwater in ["ON", "1"] else "OFF"
+        ),
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.warmwater is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="alarm_active",
         name="Alarm Active",
-        value_fn=lambda device: "ON"
-        if device.realtime_info.common.alarm_active in ["ON", "1"]
-        else "OFF",
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.alarm_active is not None,
+        value_fn=lambda device: (
+            "ON" if device.realtime_info.common.alarm_active in ["ON", "1"] else "OFF"
+        ),
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.alarm_active is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="current_heating_pump_state",
         name="Current Heating Pump State",
-        value_fn=lambda device: "ON"
-        if device.realtime_info.common.current_heating_pump_state in ["ON", "1"]
-        else "OFF",
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.current_heating_pump_state is not None,
+        value_fn=lambda device: (
+            "ON"
+            if device.realtime_info.common.current_heating_pump_state in ["ON", "1"]
+            else "OFF"
+        ),
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.current_heating_pump_state is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="current_heating_state",
         name="Current Heating State",
-        value_fn=lambda device: "ON"
-        if device.realtime_info.common.current_heating_state in ["ON", "1"]
-        else "OFF",
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.current_heating_state is not None,
+        value_fn=lambda device: (
+            "ON"
+            if device.realtime_info.common.current_heating_state in ["ON", "1"]
+            else "OFF"
+        ),
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.current_heating_state is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="operation_mode",
         name="Operation Mode",
         device_class=SensorDeviceClass.ENUM,
         value_fn=lambda device: device.realtime_info.common.operation_mode,
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.operation_mode is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.operation_mode is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="operation_mode_text",
         name="Operation Mode Text",
         device_class=SensorDeviceClass.ENUM,
         value_fn=lambda device: get_friendly_operation_mode_text(device),
-        exists_fn=lambda device: device.realtime_info is not None
-        and device.realtime_info.common is not None
-        and device.realtime_info.common.operation_mode is not None,
+        exists_fn=lambda device: (
+            device.realtime_info is not None
+            and device.realtime_info.common is not None
+            and device.realtime_info.common.operation_mode is not None
+        ),
     ),
 )
 
@@ -524,8 +620,10 @@ SENSORS_ZONES_CONTROLLER: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.zone_controller_info.set_temperature,
-        exists_fn=lambda device: device.zone_controller_info is not None
-        and device.zone_controller_info.set_temperature is not None,
+        exists_fn=lambda device: (
+            device.zone_controller_info is not None
+            and device.zone_controller_info.set_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="current_temperature",
@@ -534,8 +632,10 @@ SENSORS_ZONES_CONTROLLER: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.zone_controller_info.current_temperature,
-        exists_fn=lambda device: device.zone_controller_info is not None
-        and device.zone_controller_info.current_temperature is not None,
+        exists_fn=lambda device: (
+            device.zone_controller_info is not None
+            and device.zone_controller_info.current_temperature is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="battery_level",
@@ -544,9 +644,11 @@ SENSORS_ZONES_CONTROLLER: tuple[EpluconSensorEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         device_class=SensorDeviceClass.BATTERY,
         value_fn=lambda device: device.zone_controller_info.raw_data.zone.battery_level,
-        exists_fn=lambda device: device.zone_controller_info is not None
-        and device.zone_controller_info.raw_data is not None
-        and device.zone_controller_info.raw_data.zone is not None,
+        exists_fn=lambda device: (
+            device.zone_controller_info is not None
+            and device.zone_controller_info.raw_data is not None
+            and device.zone_controller_info.raw_data.zone is not None
+        ),
     ),
     EpluconSensorEntityDescription(
         key="signal_strength",
@@ -554,10 +656,14 @@ SENSORS_ZONES_CONTROLLER: tuple[EpluconSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
-        value_fn=lambda device: device.zone_controller_info.raw_data.zone.signal_strength,
-        exists_fn=lambda device: device.zone_controller_info is not None
-        and device.zone_controller_info.raw_data is not None
-        and device.zone_controller_info.raw_data.zone is not None,
+        value_fn=lambda device: (
+            device.zone_controller_info.raw_data.zone.signal_strength
+        ),
+        exists_fn=lambda device: (
+            device.zone_controller_info is not None
+            and device.zone_controller_info.raw_data is not None
+            and device.zone_controller_info.raw_data.zone is not None
+        ),
     ),
 )
 
@@ -625,6 +731,16 @@ async def async_setup_entry(
         if description.exists_fn(device)
     )
 
+    if coordinator.brine_feature_enabled:
+        async_add_entities(
+            EpluconBrineSensorEntity(coordinator, device, "valid_temperature")
+            for device in list_device_dto_heat_pump
+        )
+        async_add_entities(
+            EpluconBrineSensorEntity(coordinator, device, "monthly_mean")
+            for device in list_device_dto_heat_pump
+        )
+
 
 class EpluconSensorEntity(CoordinatorEntity, SensorEntity):
     """Representation of an Eplucon sensor."""
@@ -688,3 +804,87 @@ class EpluconZonesSensorEntity(EpluconSensorEntity):
         self._attr_name = f"{device.name}, {entity_description.name}"
         self._attr_unique_id = f"{device.id}_{entity_description.key}"
         self._update_device_data()
+
+
+class EpluconBrineSensorEntity(CoordinatorEntity, SensorEntity):
+    """Representation of a derived Eplucon brine sensor."""
+
+    def __init__(self, coordinator, device: DeviceDTO, sensor_kind: str) -> None:
+        """Initialize the derived brine sensor."""
+        super().__init__(coordinator)
+        self.device = device
+        self.sensor_kind = sensor_kind
+
+        if sensor_kind == "valid_temperature":
+            self._attr_name = "Brine In Temperature Valid"
+            self._attr_unique_id = f"{device.id}_brine_in_temperature_valid"
+            self._attr_state_class = SensorStateClass.MEASUREMENT
+            self._attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+            self._attr_device_class = SensorDeviceClass.TEMPERATURE
+        else:
+            self._attr_name = "Brine In Temperature Mean Month"
+            self._attr_unique_id = f"{device.id}_brine_in_temperature_mean_month"
+            self._attr_state_class = SensorStateClass.MEASUREMENT
+            self._attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+            self._attr_device_class = SensorDeviceClass.TEMPERATURE
+
+        self._update_device_data()
+
+    @property
+    def device_info(self) -> dict:
+        """Return information to link this entity with the correct device."""
+        return {
+            "manufacturer": MANUFACTURER,
+            "identifiers": {(DOMAIN, self.device.account_module_index)},
+        }
+
+    @property
+    def available(self) -> bool:
+        """Return if the source heat pump data is available."""
+        return (
+            super().available
+            and self.device.realtime_info is not None
+            and self.device.realtime_info.common is not None
+        )
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str | int] | None:
+        """Return additional monthly statistics metadata."""
+        if self.sensor_kind != "monthly_mean":
+            return None
+
+        return {
+            "month": self.coordinator.get_monthly_brine_month_key(self.device.id),
+            "sample_count": self.coordinator.get_monthly_brine_sample_count(
+                self.device.id
+            ),
+        }
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the derived sensor value."""
+        if self.sensor_kind == "valid_temperature":
+            brine_temperature = None
+            if self.device.realtime_info is not None:
+                brine_temperature = (
+                    self.device.realtime_info.common.brine_in_temperature
+                )
+            return self.coordinator.get_valid_brine_temperature(
+                self.device.id,
+                brine_temperature,
+            )
+
+        return self.coordinator.get_monthly_brine_mean(self.device.id)
+
+    def _update_device_data(self) -> None:
+        """Update the internal data from the coordinator."""
+        for updated_device in self.coordinator.data:
+            if isinstance(updated_device, dict):
+                updated_device = from_dict(data_class=DeviceDTO, data=updated_device)
+            if updated_device.id == self.device.id:
+                self.device = updated_device
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self._update_device_data()
+        super()._handle_coordinator_update()

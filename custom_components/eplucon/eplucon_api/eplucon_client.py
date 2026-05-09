@@ -49,8 +49,8 @@ class EpluconApi:
         await self._session.close()
 
     async def get_devices(self) -> list[DeviceDTO]:
-        _LOGGER.debug(f"{inspect.currentframe().f_code.co_name}")  # type: ignore
         url = f"{self._base}/econtrol/modules"
+        _LOGGER.debug(f"{inspect.currentframe().f_code.co_name} {url=}")  # type: ignore
 
         parent_devices = []
         async with self._session.get(url, headers=self._headers) as response:
@@ -97,13 +97,19 @@ class EpluconApi:
             self.validate_response(data)
 
             if "data" not in data:
-                raise ApiError("Error from Eplucon API, expecting data key in response.")
-            
+                raise ApiError(
+                    "Error from Eplucon API, expecting data key in response."
+                )
+
             else:
                 try:
                     common_info = CommonInfoDTO(**data["data"]["common"])
-                    heatpump_info = data["data"]["heatpump"]  # Not sure what this could be
-                    realtime_info = RealtimeInfoDTO(common=common_info, heatpump=heatpump_info)
+                    heatpump_info = data["data"][
+                        "heatpump"
+                    ]  # Not sure what this could be
+                    realtime_info = RealtimeInfoDTO(
+                        common=common_info, heatpump=heatpump_info
+                    )
                     return realtime_info
 
                 except Exception as e:
@@ -121,7 +127,9 @@ class EpluconApi:
 
             if "data" not in data:
                 _LOGGER.error(f"Failed to parse realtime info: {data}")
-                raise ApiError("Error from Eplucon API, expecting data key in response.")
+                raise ApiError(
+                    "Error from Eplucon API, expecting data key in response."
+                )
 
             for controller in data["data"]:
                 zone_controller_info = ZoneControllerInfoDTO(**controller)
