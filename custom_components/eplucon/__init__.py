@@ -1,7 +1,9 @@
+from __future__ import annotations
+
+import asyncio
 import logging
-import inspect
 from datetime import timedelta
-from typing import Any
+from typing import Any, TypeVar
 
 from dacite import from_dict
 from homeassistant.config_entries import ConfigEntry
@@ -30,12 +32,65 @@ from .const import (
     PLATFORMS,
     SUPPORTED_TYPES,
 )
-from .eplucon_api.eplucon_client import BASE_URL, ApiError, DeviceDTO, EpluconApi
+from .eplucon_api.DTO.DeviceDTO import DeviceDTO
+from .eplucon_api.eplucon_client import BASE_URL, ApiError, EpluconApi
 
 _LOGGER = logging.getLogger(__name__)
 
-# Time between data updates
 UPDATE_INTERVAL = timedelta(seconds=30)
+_RetryT = TypeVar("_RetryT")
+
+
+def is_valid_realtime_info(info: Any) -> bool:
+    """Return False if the payload is clearly invalid."""
+    if info is None or info.common is None:
+        return False
+
+    indicators = [
+        info.common.indoor_temperature,
+        info.common.outdoor_temperature,
+        info.common.operating_hours,
+    ]
+    return any(value not in (None, 0, "0", "0.0") for value in indicators)
+
+
+async def fetch_with_retry(func, *args, retries: int = 3, delay: int = 2):
+    """Retry transient API calls a small number of times."""
+    for attempt in range(1, retries + 1):
+        try:
+            return await func(*args)
+        except Exception as err:
+            if attempt == retries:
+                raise
+            _LOGGER.warning(
+                "API call %s failed (%s), retry %d/%d",
+                func.__name__,
+                err,
+                attempt,
+                retries,
+            )
+            await asyncio.sleep(delay)
+
+    raise RuntimeError("Retry loop exited without returning or raising")
+
+
+def coerce_float(value: Any) -> float | None:
+    """Convert DTO values to floats where possible."""
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+async def device_dict_to_dto(device: DeviceDTO | dict[str, Any]) -> DeviceDTO:
+    """Normalize persisted config-entry device payloads to DTOs."""
+    if isinstance(device, dict):
+        return from_dict(data_class=DeviceDTO, data=device)
+    return device
 
 
 class EpluconDataUpdateCoordinator(DataUpdateCoordinator[list[DeviceDTO]]):
@@ -59,6 +114,7 @@ class EpluconDataUpdateCoordinator(DataUpdateCoordinator[list[DeviceDTO]]):
         self.entry = entry
         self.client = client
         self._devices = devices
+        self._last_good_devices: dict[int, DeviceDTO] = {}
         self._brine_store: Store[dict[str, Any]] = Store(
             hass,
             BRINE_STATS_STORAGE_VERSION,
@@ -112,57 +168,55 @@ class EpluconDataUpdateCoordinator(DataUpdateCoordinator[list[DeviceDTO]]):
         now = dt_util.now()
         stored_stats = await self._brine_store.async_load() or {}
         self._brine_stats = {
-            device_id: BrineMonthlyStats.from_dict(payload, now=now)
+            str(device_id): BrineMonthlyStats.from_dict(payload, now=now)
             for device_id, payload in stored_stats.items()
             if isinstance(payload, dict)
         }
 
-    def is_brine_valid(self, device_id: str) -> bool:
+    def is_brine_valid(self, device_id: int | str) -> bool:
         """Return if brine circulation has been active long enough."""
-        stats = self._brine_stats.get(device_id)
+        stats = self._brine_stats.get(str(device_id))
         if stats is None:
             return False
         return stats.is_valid(dt_util.now(), self.brine_config)
 
     def get_valid_brine_temperature(
-        self, device_id: str, brine_temperature: float | None
+        self, device_id: int | str, brine_temperature: float | None
     ) -> float | None:
         """Return the current brine input temperature when valid."""
-        stats = self._brine_stats.get(device_id)
+        stats = self._brine_stats.get(str(device_id))
         if stats is None:
             return None
         return stats.valid_temperature(
             dt_util.now(), self.brine_config, brine_temperature
         )
 
-    def get_monthly_brine_mean(self, device_id: str) -> float | None:
+    def get_monthly_brine_mean(self, device_id: int | str) -> float | None:
         """Return the persisted monthly mean brine temperature."""
-        stats = self._brine_stats.get(device_id)
+        stats = self._brine_stats.get(str(device_id))
         if stats is None:
             return None
         return stats.monthly_mean
 
-    def get_monthly_brine_sample_count(self, device_id: str) -> int:
+    def get_monthly_brine_sample_count(self, device_id: int | str) -> int:
         """Return the number of monthly brine samples."""
-        stats = self._brine_stats.get(device_id)
+        stats = self._brine_stats.get(str(device_id))
         if stats is None:
             return 0
         return stats.sample_count
 
-    def get_monthly_brine_month_key(self, device_id: str) -> str | None:
+    def get_monthly_brine_month_key(self, device_id: int | str) -> str | None:
         """Return the month bucket used for the current statistics."""
-        stats = self._brine_stats.get(device_id)
+        stats = self._brine_stats.get(str(device_id))
         if stats is None:
             return None
         return stats.month_key
 
     async def _async_update_data(self) -> list[DeviceDTO]:
-        """Fetch Eplucon data from API endpoint."""
-        _LOGGER.debug("%s", inspect.currentframe().f_code.co_name)  # type: ignore[union-attr]
+        """Fetch Eplucon data from the API."""
+        refreshed_devices: list[DeviceDTO] = []
 
         try:
-            refreshed_devices: list[DeviceDTO] = []
-
             for entry_device in self._devices:
                 if entry_device.type not in SUPPORTED_TYPES:
                     _LOGGER.debug(
@@ -173,14 +227,45 @@ class EpluconDataUpdateCoordinator(DataUpdateCoordinator[list[DeviceDTO]]):
                     continue
 
                 if entry_device.type == "heat_pump":
-                    entry_device.realtime_info = await self.client.get_realtime_info(
-                        entry_device.id
+                    realtime_info = await fetch_with_retry(
+                        self.client.get_realtime_info,
+                        entry_device.id,
+                    )
+                    heatloading_status = await fetch_with_retry(
+                        self.client.get_heatpump_heatloading_status,
+                        entry_device.id,
                     )
 
+                    if is_valid_realtime_info(realtime_info):
+                        entry_device.realtime_info = realtime_info
+                        entry_device.heatloading_status = heatloading_status
+                        self._last_good_devices[entry_device.id] = entry_device
+                    else:
+                        _LOGGER.warning(
+                            "Invalid realtime data for device %s, keeping last known values",
+                            entry_device.id,
+                        )
+                        last_good = self._last_good_devices.get(entry_device.id)
+                        if last_good is not None:
+                            entry_device.realtime_info = last_good.realtime_info
+                            entry_device.heatloading_status = (
+                                last_good.heatloading_status
+                            )
+                        else:
+                            entry_device.realtime_info = realtime_info
+                            entry_device.heatloading_status = heatloading_status
+
                 elif entry_device.type == "zones_controller":
-                    assert entry_device.zone_controller_id is not None
-                    zone_controllers_info = await self.client.get_zone_controllers(
-                        entry_device.zone_controller_id
+                    if entry_device.zone_controller_id is None:
+                        _LOGGER.debug(
+                            "Zone controller device %s has no parent id, skipping update",
+                            entry_device.id,
+                        )
+                        continue
+
+                    zone_controllers_info = await fetch_with_retry(
+                        self.client.get_zone_controllers,
+                        entry_device.zone_controller_id,
                     )
                     for zone_controller_info in zone_controllers_info:
                         if zone_controller_info.id == entry_device.id:
@@ -198,12 +283,11 @@ class EpluconDataUpdateCoordinator(DataUpdateCoordinator[list[DeviceDTO]]):
             )
             return refreshed_devices
 
-        except ApiError as err:
-            _LOGGER.error("Error fetching data from Eplucon API: %s", err)
+        except ApiError:
             raise
         except Exception as err:
             _LOGGER.error(
-                "Something went wrong when updating Eplucon device from API: %s",
+                "Something went wrong when updating Eplucon device data: %s",
                 err,
             )
             raise
@@ -218,16 +302,17 @@ class EpluconDataUpdateCoordinator(DataUpdateCoordinator[list[DeviceDTO]]):
             if device.type != "heat_pump" or device.realtime_info is None:
                 continue
 
+            device_key = str(device.id)
             stats = self._brine_stats.setdefault(
-                device.id,
+                device_key,
                 BrineMonthlyStats(month_key=get_month_key(now)),
             )
             common = device.realtime_info.common
             stats_changed |= stats.update(
                 now=now,
                 config=config,
-                pump_percentage=common.brine_circulation_pump,
-                brine_temperature=common.brine_in_temperature,
+                pump_percentage=coerce_float(common.brine_circulation_pump),
+                brine_temperature=coerce_float(common.brine_in_temperature),
             )
 
         if stats_changed:
@@ -241,12 +326,12 @@ class EpluconDataUpdateCoordinator(DataUpdateCoordinator[list[DeviceDTO]]):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Eplucon from a config entry."""
-    _LOGGER.debug("%s", inspect.currentframe().f_code.co_name)  # type: ignore[union-attr]
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+
+    hass.data.setdefault(DOMAIN, {})
 
     api_token = entry.data["api_token"]
     api_endpoint = entry.data.get("api_endpoint", BASE_URL)
-
     session = async_get_clientsession(hass)
     client = EpluconApi(api_token, api_endpoint, session)
 
@@ -254,16 +339,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     coordinator = EpluconDataUpdateCoordinator(hass, entry, client, dto_devices)
     await coordinator.async_initialize()
-
-    # Fetch initial data so we have data when entities subscribe
     await coordinator.async_config_entry_first_refresh()
 
-    # Store the coordinator in hass.data, so it's accessible in other parts of the integration
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
+    hass.data[DOMAIN][entry.entry_id] = coordinator
 
-    # Forward the setup to the sensor platform
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
     return True
 
 
@@ -275,7 +355,7 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 async def register_device(
     device: DeviceDTO, entry: ConfigEntry, hass_device_registry: DeviceRegistry
 ) -> None:
-    _LOGGER.debug("%s", inspect.currentframe().f_code.co_name)  # type: ignore[union-attr]
+    """Register a device in the Home Assistant device registry."""
     hass_device_registry.async_get_or_create(
         configuration_url=EPLUCON_PORTAL_URL,
         config_entry_id=entry.entry_id,
@@ -288,60 +368,54 @@ async def register_device(
 
 
 async def register_devices(
-    devices: list[dict[str, Any]],
+    devices: list[dict[str, Any] | DeviceDTO],
     entry: ConfigEntry,
     hass: HomeAssistant,
     client: EpluconApi,
 ) -> list[DeviceDTO]:
-    _LOGGER.debug("%s", inspect.currentframe().f_code.co_name)  # type: ignore[union-attr]
+    """Register config-entry devices and expand zone controllers to child devices."""
     hass_device_registry = device_registry.async_get(hass)
 
     updated_devices: list[DeviceDTO] = []
     for device in devices:
-        device = await device_dict_to_dto(device)
+        dto_device = await device_dict_to_dto(device)
 
-        if device.type == "zones_controller" and device.zone_controller_id is None:
-            zone_controllers_info = await client.get_zone_controllers(device.id)
-            for zidx, zone_controller_info in enumerate(zone_controllers_info):
+        if (
+            dto_device.type == "zones_controller"
+            and dto_device.zone_controller_id is None
+        ):
+            zone_controllers_info = await fetch_with_retry(
+                client.get_zone_controllers,
+                dto_device.id,
+            )
+            for index, zone_controller_info in enumerate(zone_controllers_info):
                 zone_device = DeviceDTO(
                     id=zone_controller_info.id,
-                    account_module_index=f"{device.account_module_index}{zidx}",
-                    name=f"{device.name}: {zone_controller_info.name}",
-                    type=device.type,
-                    zone_controller_id=device.id,
+                    account_module_index=f"{dto_device.account_module_index}{index}",
+                    name=f"{dto_device.name}: {zone_controller_info.name}",
+                    type=dto_device.type,
+                    zone_controller_id=dto_device.id,
                     zone_controller_info=zone_controller_info,
                 )
                 await register_device(zone_device, entry, hass_device_registry)
                 updated_devices.append(zone_device)
+            continue
 
-        else:
-            await register_device(device, entry, hass_device_registry)
-            updated_devices.append(device)
+        await register_device(dto_device, entry, hass_device_registry)
+        updated_devices.append(dto_device)
 
     _LOGGER.debug(
-        "Registered %s devices in device registry",
+        "Registered devices in device registry: %s",
         [device.name for device in updated_devices],
     )
-
     return updated_devices
 
 
-async def device_dict_to_dto(device_dict: DeviceDTO | dict) -> DeviceDTO:
-    """
-    When retrieving given devices from HASS config flow the entry.data["devices"]
-    is type list[DeviceDTO] but on boot this is a list[dict], not sure why and if this is intended,
-    but this method will ensure we can parse the correct format here.
-    """
-    if isinstance(device_dict, dict):
-        device_dict = from_dict(data_class=DeviceDTO, data=device_dict)
-    return device_dict
-
-
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload a config entry."""
+    """Unload an Eplucon config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
+        hass.data[DOMAIN].pop(entry.entry_id, None)
 
     return unload_ok

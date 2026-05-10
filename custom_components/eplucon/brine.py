@@ -81,25 +81,30 @@ class BrineMonthlyStats:
     ) -> bool:
         """Update monthly statistics from the latest coordinator sample."""
         changed = False
+        sampled = False
         current_month_key = get_month_key(now)
-
-        if self.month_key != current_month_key:
-            self.month_key = current_month_key
-            self.temperature_sum = 0.0
-            self.sample_count = 0
-            self.run_started_at = None
-            self.last_sample_at = None
-            changed = True
 
         if pump_percentage is None or pump_percentage <= config.pump_threshold:
             self.run_started_at = None
             self.last_sample_at = None
+            if self.month_key != current_month_key:
+                self.month_key = current_month_key
+                self.temperature_sum = 0.0
+                self.sample_count = 0
+                changed = True
             return changed
 
         if self.run_started_at is None:
             self.run_started_at = now
 
         if not self.is_valid(now, config) or brine_temperature is None:
+            if self.month_key != current_month_key:
+                self.month_key = current_month_key
+                self.temperature_sum = 0.0
+                self.sample_count = 0
+                self.run_started_at = None
+                self.last_sample_at = None
+                changed = True
             return changed
 
         if (
@@ -109,6 +114,15 @@ class BrineMonthlyStats:
             self.temperature_sum += brine_temperature
             self.sample_count += 1
             self.last_sample_at = now
+            changed = True
+            sampled = True
+
+        if self.month_key != current_month_key and not sampled:
+            self.month_key = current_month_key
+            self.temperature_sum = 0.0
+            self.sample_count = 0
+            self.run_started_at = None
+            self.last_sample_at = None
             changed = True
 
         return changed
