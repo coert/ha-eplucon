@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.5.1](https://github.com/koenhendriks/ha-eplucon/releases/1.5.1) - 2026-01-27
+
+### Fixed
+* ([#31](https://github.com/koenhendriks/ha-eplucon/pull/31)) Changed import_energy and export_energy types to Union to handle both int and float values by [@joopmartens](https://github.com/joopmartens)
+
+## [1.5.0](https://github.com/koenhendriks/ha-eplucon/releases/1.5.0) - 2026-01-23
+
+### Fixed
+* ([#14](https://github.com/koenhendriks/ha-eplucon/issues/14)) Config flow has been updated as of home assistant >2025.12 by [@reddevil82](https://github.com/reddevil82)
+* ([#17](https://github.com/koenhendriks/ha-eplucon/issues/17)) Updated the Eplucon API client to handle device fetching and response validation more robustly by [@reddevil82](https://github.com/reddevil82)
+
+
+### Updated
+* Refactored sensor entity descriptions for clearer implementation and reduced duplication by [@reddevil82](https://github.com/reddevil82)
+* Streamlined the coordinator's device update mechanism to ensure more accurate state representation in Home Assistant by [@reddevil82](https://github.com/reddevil82)
+
+### Added
+* Enhanced error handling and debugging outputs in API data fetching methods by [@reddevil82](https://github.com/reddevil82)
+
+
+## [1.4.1](https://github.com/koenhendriks/ha-eplucon/releases/1.4.1) - 2025-03-23
+
+### Fixed
+
+- Fixed error when mapping json from API to CommonInfoDTO ([#23](https://github.com/koenhendriks/ha-eplucon/issues/23))
+
+## [1.4.0](https://github.com/koenhendriks/ha-eplucon/releases/1.4.0) - 2025-02-03
+
+### Added
+* ([!18](https://github.com/koenhendriks/ha-eplucon/pull/18)) Adding HeatLoading Status and sensors by [@ArneDT](https://github.com/ArneDT)
+* ([#19](https://github.com/koenhendriks/ha-eplucon/issues/19)) Added friendly text sensor (thanks to [@joopmartens](https://github.com/joopmartens)) for Heating Mode displaying the state as following:
+    * Turned off
+    * Turned on
+    * Emergency operation
+    * APX
+  
+### Fixed
+* ([#15](https://github.com/koenhendriks/ha-eplucon/issues/15)) Total active power (and inverter temperature) is now parsed as float.
+* ([#13](https://github.com/koenhendriks/ha-eplucon/issues/13)) Total active power is now in KiloWatt, Import and export energy are now divided by 100 where possible.
+
 ## [1.3.0](https://github.com/koenhendriks/ha-eplucon/releases/1.3.0) - 2024-11-05
 
 ### Added 
