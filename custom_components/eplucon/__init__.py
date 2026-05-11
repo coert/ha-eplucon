@@ -352,11 +352,26 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await hass.config_entries.async_reload(entry.entry_id)
 
 
+def _build_zone_device_name(controller_name: str, zone_name: str) -> str:
+    """Build a stable zone device name without duplicating identical labels."""
+    normalized_controller_name = controller_name.strip()
+    normalized_zone_name = zone_name.strip()
+
+    if not normalized_controller_name:
+        return normalized_zone_name
+    if not normalized_zone_name:
+        return normalized_controller_name
+    if normalized_controller_name.casefold() == normalized_zone_name.casefold():
+        return normalized_zone_name
+
+    return f"{normalized_controller_name}: {normalized_zone_name}"
+
+
 async def register_device(
     device: DeviceDTO, entry: ConfigEntry, hass_device_registry: DeviceRegistry
 ) -> None:
     """Register a device in the Home Assistant device registry."""
-    hass_device_registry.async_get_or_create(
+    device_entry = hass_device_registry.async_get_or_create(
         configuration_url=EPLUCON_PORTAL_URL,
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, device.account_module_index)},
@@ -365,6 +380,8 @@ async def register_device(
         name=device.name,
         model=device.type,
     )
+    if device_entry.name_by_user is None and device_entry.name != device.name:
+        hass_device_registry.async_update_device(device_entry.id, name=device.name)
 
 
 async def register_devices(
@@ -392,7 +409,10 @@ async def register_devices(
                 zone_device = DeviceDTO(
                     id=zone_controller_info.id,
                     account_module_index=f"{dto_device.account_module_index}{index}",
-                    name=f"{dto_device.name}: {zone_controller_info.name}",
+                    name=_build_zone_device_name(
+                        dto_device.name,
+                        zone_controller_info.name,
+                    ),
                     type=dto_device.type,
                     zone_controller_id=dto_device.id,
                     zone_controller_info=zone_controller_info,

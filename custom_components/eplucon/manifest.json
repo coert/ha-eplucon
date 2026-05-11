@@ -1,7 +1,7 @@
 {
   "domain": "eplucon",
   "name": "Eplucon",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "documentation": "https://github.com/coert/ha-eplucon",
   "dependencies": [
     "sensor"
