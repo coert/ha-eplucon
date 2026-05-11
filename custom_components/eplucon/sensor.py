@@ -19,6 +19,7 @@ from homeassistant.const import (
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from homeassistant.helpers.update_coordinator import (
@@ -30,6 +31,52 @@ from .const import DOMAIN, MANUFACTURER, SENSORS, EpluconSensorEntityDescription
 from .eplucon_api.DTO.DeviceDTO import DeviceDTO
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _deduplicate_zone_object_id(object_id: str, key: str) -> str | None:
+    """Return the original object id when the device slug was doubled."""
+    suffix = f"_{key}"
+    if not object_id.endswith(suffix):
+        return None
+
+    base = object_id[: -len(suffix)]
+    for split_index, char in enumerate(base):
+        if char != "_":
+            continue
+
+        prefix = base[:split_index]
+        if prefix and base[split_index + 1 :] == prefix:
+            return f"{prefix}{suffix}"
+
+    return None
+
+
+def _migrate_zone_entity_id(
+    entity_registry: er.EntityRegistry,
+    unique_id: str,
+    key: str,
+) -> None:
+    """Rename doubled zone sensor entity ids back to their original form."""
+    entity_id = entity_registry.async_get_entity_id("sensor", DOMAIN, unique_id)
+    if entity_id is None:
+        return
+
+    domain, object_id = entity_id.split(".", maxsplit=1)
+    target_object_id = _deduplicate_zone_object_id(object_id, key)
+    if target_object_id is None or target_object_id == object_id:
+        return
+
+    try:
+        entity_registry.async_update_entity(
+            entity_id,
+            new_entity_id=f"{domain}.{target_object_id}",
+        )
+    except ValueError:
+        _LOGGER.warning(
+            "Could not rename entity %s to %s",
+            entity_id,
+            f"{domain}.{target_object_id}",
+        )
 
 
 @dataclass(kw_only=True)
@@ -50,10 +97,7 @@ ZONE_CONTROLLER_SENSORS: tuple[EpluconZoneSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.zone_controller_info.set_temperature,
-        exists_fn=lambda device: (
-            device.zone_controller_info is not None
-            and device.zone_controller_info.set_temperature is not None
-        ),
+        exists_fn=lambda device: device.zone_controller_info is not None,
     ),
     EpluconZoneSensorEntityDescription(
         key="current_temperature",
@@ -62,10 +106,7 @@ ZONE_CONTROLLER_SENSORS: tuple[EpluconZoneSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda device: device.zone_controller_info.current_temperature,
-        exists_fn=lambda device: (
-            device.zone_controller_info is not None
-            and device.zone_controller_info.current_temperature is not None
-        ),
+        exists_fn=lambda device: device.zone_controller_info is not None,
     ),
     EpluconZoneSensorEntityDescription(
         key="battery_level",
@@ -119,6 +160,15 @@ async def async_setup_entry(
         elif device.type == "zones_controller":
             zone_controllers.append(device)
 
+    entity_registry = er.async_get(hass)
+    for device in zone_controllers:
+        for description in ZONE_CONTROLLER_SENSORS:
+            _migrate_zone_entity_id(
+                entity_registry,
+                unique_id=f"{device.id}_{description.key}",
+                key=description.key,
+            )
+
     entities: list[CoordinatorEntity] = [
         EpluconSensorEntity(coordinator, device, description)
         for device in heat_pumps
@@ -150,6 +200,7 @@ class EpluconSensorEntity(CoordinatorEntity, SensorEntity):
     """Representation of an Eplucon sensor."""
 
     entity_description: SensorEntityDescription
+    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -184,7 +235,15 @@ class EpluconSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
-        return self.entity_description.value_fn(self.device)
+        try:
+            return self.entity_description.value_fn(self.device)
+        except (AttributeError, TypeError):
+            _LOGGER.debug(
+                "Value for sensor %s is temporarily unavailable on device %s",
+                self.entity_description.key,
+                self.device.id,
+            )
+            return None
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -203,7 +262,7 @@ class EpluconZonesSensorEntity(EpluconSensorEntity):
     ) -> None:
         """Initialize the zone controller sensor."""
         super().__init__(coordinator, device, entity_description)
-        self._attr_name = f"{device.name}, {entity_description.name}"
+        self._attr_name = entity_description.name
         self._attr_unique_id = f"{device.id}_{entity_description.key}"
         self._update_device_data()
 
