@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
 from dacite import from_dict
@@ -27,10 +28,81 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .const import DOMAIN, MANUFACTURER, SENSORS, EpluconSensorEntityDescription
+from .const import (
+    DOMAIN,
+    MANUFACTURER,
+    SENSORS,
+    EpluconSensorEntityDescription,
+    get_common_value,
+    get_friendly_operation_mode_text,
+    normalize_number,
+)
 from .eplucon_api.DTO.DeviceDTO import DeviceDTO
 
 _LOGGER = logging.getLogger(__name__)
+
+_DASHBOARD_OPERATION_MODE_ICONS = {
+    1: "sun",
+    2: "snow",
+}
+
+
+def _get_dashboard_operation_mode_icon(device: Any) -> str | None:
+    """Return a stable icon token for the dashboard summary."""
+    operation_mode = normalize_number(get_common_value(device, "operation_mode"))
+    if not isinstance(operation_mode, int):
+        return None
+    return _DASHBOARD_OPERATION_MODE_ICONS.get(operation_mode)
+
+
+def _build_dashboard_summary_attributes(
+    device: DeviceDTO,
+    last_updated: datetime | None,
+) -> dict[str, Any]:
+    """Build the card-facing attribute payload for a heat pump."""
+    attributes: dict[str, Any] = {
+        "device_id": device.id,
+        "device_name": device.name,
+        "operation_mode": normalize_number(get_common_value(device, "operation_mode")),
+        "operation_mode_text": get_friendly_operation_mode_text(device),
+        "operation_mode_icon": _get_dashboard_operation_mode_icon(device),
+    }
+
+    for attr in (
+        "indoor_temperature",
+        "outdoor_temperature",
+        "configured_indoor_temperature",
+        "ww_temperature",
+        "ww_temperature_configured",
+        "brine_in_temperature",
+        "brine_out_temperature",
+        "heating_in_temperature",
+        "heating_out_temperature",
+        "energy_usage",
+        "energy_delivered",
+        "spf",
+    ):
+        attributes[attr] = normalize_number(get_common_value(device, attr))
+
+    if last_updated is not None:
+        attributes["last_updated"] = last_updated.isoformat()
+
+    return attributes
+
+
+DASHBOARD_SUMMARY_DESCRIPTION = EpluconSensorEntityDescription(
+    key="dashboard_summary",
+    name="Dashboard Summary",
+    value_fn=get_friendly_operation_mode_text,
+    exists_fn=lambda device: (
+        getattr(
+            getattr(device, "realtime_info", None),
+            "common",
+            None,
+        )
+        is not None
+    ),
+)
 
 
 def _deduplicate_zone_object_id(object_id: str, key: str) -> str | None:
@@ -170,11 +242,16 @@ async def async_setup_entry(
             )
 
     entities: list[CoordinatorEntity] = [
+        EpluconDashboardSummaryEntity(coordinator, device)
+        for device in heat_pumps
+        if DASHBOARD_SUMMARY_DESCRIPTION.exists_fn(device)
+    ]
+    entities.extend(
         EpluconSensorEntity(coordinator, device, description)
         for device in heat_pumps
         for description in SENSORS
         if description.exists_fn(device)
-    ]
+    )
     entities.extend(
         EpluconZonesSensorEntity(coordinator, device, description)
         for device in zone_controllers
@@ -249,6 +326,24 @@ class EpluconSensorEntity(CoordinatorEntity, SensorEntity):
         """Handle updated data from the coordinator."""
         self._update_device_data()
         super()._handle_coordinator_update()
+
+
+class EpluconDashboardSummaryEntity(EpluconSensorEntity):
+    """Representation of the card-facing Eplucon dashboard summary."""
+
+    _attr_icon = "mdi:view-dashboard-outline"
+
+    def __init__(self, coordinator, device: DeviceDTO) -> None:
+        """Initialize the dashboard summary entity."""
+        super().__init__(coordinator, device, DASHBOARD_SUMMARY_DESCRIPTION)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return a stable summary payload for the frontend card."""
+        return _build_dashboard_summary_attributes(
+            self.device,
+            getattr(self.coordinator, "last_update_success_time", None),
+        )
 
 
 class EpluconZonesSensorEntity(EpluconSensorEntity):

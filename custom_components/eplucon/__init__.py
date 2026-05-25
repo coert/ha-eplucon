@@ -3,8 +3,11 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import timedelta
+from pathlib import Path
 from typing import Any, TypeVar
 
+from homeassistant.components.frontend import add_extra_js_url, remove_extra_js_url
+from homeassistant.components.http import StaticPathConfig
 from dacite import from_dict
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -39,6 +42,11 @@ _LOGGER = logging.getLogger(__name__)
 
 UPDATE_INTERVAL = timedelta(seconds=30)
 _RetryT = TypeVar("_RetryT")
+FRONTEND_STATIC_URL = f"/{DOMAIN}_static"
+FRONTEND_CARD_URL = f"{FRONTEND_STATIC_URL}/eplucon-card.js"
+_FRONTEND_STATIC_REGISTERED = f"{DOMAIN}_frontend_static_registered"
+_FRONTEND_MODULE_LOADED = f"{DOMAIN}_frontend_module_loaded"
+_FRONTEND_DIRECTORY = Path(__file__).parent / "frontend"
 
 
 def is_valid_realtime_info(info: Any) -> bool:
@@ -84,6 +92,32 @@ def coerce_float(value: Any) -> float | None:
         return float(value)
     except (TypeError, ValueError):
         return None
+
+
+async def _async_register_frontend_resources(hass: HomeAssistant) -> None:
+    """Register static paths and the dashboard card module once."""
+    if not hass.data.get(_FRONTEND_STATIC_REGISTERED):
+        await hass.http.async_register_static_paths(
+            [
+                StaticPathConfig(
+                    FRONTEND_STATIC_URL,
+                    str(_FRONTEND_DIRECTORY),
+                    cache_headers=False,
+                )
+            ]
+        )
+        hass.data[_FRONTEND_STATIC_REGISTERED] = True
+
+    if not hass.data.get(_FRONTEND_MODULE_LOADED):
+        add_extra_js_url(hass, FRONTEND_CARD_URL)
+        hass.data[_FRONTEND_MODULE_LOADED] = True
+
+
+def _async_unregister_frontend_resources(hass: HomeAssistant) -> None:
+    """Remove the frontend card module when the integration is unloaded."""
+    if hass.data.get(_FRONTEND_MODULE_LOADED):
+        remove_extra_js_url(hass, FRONTEND_CARD_URL)
+        hass.data[_FRONTEND_MODULE_LOADED] = False
 
 
 async def device_dict_to_dto(device: DeviceDTO | dict[str, Any]) -> DeviceDTO:
@@ -329,6 +363,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
     hass.data.setdefault(DOMAIN, {})
+    await _async_register_frontend_resources(hass)
 
     api_token = entry.data["api_token"]
     api_endpoint = entry.data.get("api_endpoint", BASE_URL)
@@ -437,5 +472,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
+        if not hass.data[DOMAIN]:
+            _async_unregister_frontend_resources(hass)
 
     return unload_ok
