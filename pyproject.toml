@@ -8,5 +8,6 @@ dependencies = [
     "dacite>=1.9.2",
     "homeassistant>=2025.2.5",
     "orjson>=3.10",
+    "python-dotenv>=1.2.2",
     "tqdm>=4.67.1",
 ]

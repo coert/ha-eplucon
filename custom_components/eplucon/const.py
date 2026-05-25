@@ -71,20 +71,24 @@ def normalize_number(value: Any) -> int | float | None:
     return int(number) if number.is_integer() else number
 
 
-def get_friendly_operation_mode_text(device: Any) -> str:
-    """Return a friendly label for the operation mode."""
-    try:
-        operation_mode = int(get_common_value(device, "operation_mode"))
-    except (TypeError, ValueError):
-        return "Unavailable"
-
+def get_friendly_operation_modes() -> dict[int, str]:
+    """Return a mapping of operation mode integers to friendly labels."""
     return {
         1: "Koeling",
         2: "Verwarming",
         3: "Auto th-TOUCH",
         4: "Auto Wp",
         5: "Haard",
-    }.get(operation_mode, "Unknown operation mode")
+    }
+
+def get_friendly_operation_mode_text(device: Any) -> str:
+    """Return a friendly label for the operation mode."""
+    try:
+        operation_mode = int(get_common_value(device, "operation_mode"))
+    except (TypeError, ValueError) :
+        return "Unavailable"
+
+    return get_friendly_operation_modes().get(operation_mode, "Unknown operation mode")
 
 
 def get_friendly_heating_mode_text(device: Any) -> str:
