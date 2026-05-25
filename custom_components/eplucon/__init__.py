@@ -43,10 +43,16 @@ _LOGGER = logging.getLogger(__name__)
 UPDATE_INTERVAL = timedelta(seconds=30)
 _RetryT = TypeVar("_RetryT")
 FRONTEND_STATIC_URL = f"/{DOMAIN}_static"
-FRONTEND_CARD_URL = f"{FRONTEND_STATIC_URL}/eplucon-card.js"
+ASSETS_STATIC_URL = f"/{DOMAIN}_assets"
 _FRONTEND_STATIC_REGISTERED = f"{DOMAIN}_frontend_static_registered"
 _FRONTEND_MODULE_LOADED = f"{DOMAIN}_frontend_module_loaded"
 _FRONTEND_DIRECTORY = Path(__file__).parent / "frontend"
+_ASSETS_DIRECTORY = Path(__file__).parent / "assets"
+_FRONTEND_CARD_FILE = _FRONTEND_DIRECTORY / "eplucon-card.js"
+FRONTEND_CARD_URL = (
+    f"{FRONTEND_STATIC_URL}/eplucon-card.js"
+    f"?v={int(_FRONTEND_CARD_FILE.stat().st_mtime)}"
+)
 
 
 def is_valid_realtime_info(info: Any) -> bool:
@@ -102,6 +108,11 @@ async def _async_register_frontend_resources(hass: HomeAssistant) -> None:
                 StaticPathConfig(
                     FRONTEND_STATIC_URL,
                     str(_FRONTEND_DIRECTORY),
+                    cache_headers=False,
+                ),
+                StaticPathConfig(
+                    ASSETS_STATIC_URL,
+                    str(_ASSETS_DIRECTORY),
                     cache_headers=False,
                 )
             ]
